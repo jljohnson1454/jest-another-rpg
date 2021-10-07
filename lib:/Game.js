@@ -31,4 +31,62 @@ Game.prototype.initializeGame = function() {
         });
 };
 
+Game.prototype.startNewBattle = function() {
+    if(this.player.agility > this.currentEnemy.agility){
+        this.isPlayerTurn = true;
+    } else {
+        this.isPlayerTurn = false;
+    }
+
+    console.log('Your stats are as follow:');
+    console.table(this.player.getStats());
+    console.log(this.currentEnemy.getDescription())
+
+    this.battle();
+};
+
+Game.prototype.battle = function() {
+    if (this.isPlayerTurn) {
+
+        inquirer
+            .prompt({
+                type: 'list',
+                message: 'What would you like to do?',
+                name: 'action',
+                choices: ['Attack', 'Use potion']
+            })
+            .then (({ action }) => {
+                if(action === 'Use potion') {
+                    if(!this.player.getInventory()) {
+                        console.log("You don't have any potions");
+                        return;
+                    }
+                    inquirer
+                        .prompt ({
+                            type: 'list',
+                            message: 'Whic potion would you like to use?',
+                            name: 'action',
+                            choices: this.player.getInventory().map((item, index) => `${index + 1}: ${item.name}`)
+                        })
+                        .then(({ action }) => {
+                            const potionDetails = action.split(': ');
+
+                            this.player.usePotion(potionDetails[0] - 1);
+                            console.log(`You use a ${potionDeatils[1]} potion`);
+                        });
+                    // follow-up prompt will go here
+                
+        // player prompts will go here
+    } else {
+        const damage = this.currentEnemy.getAttackValue();
+        this.player.reduceHealth(damage);
+
+        console.log(`You were attacked by the ${this.currentEnemy.name}`);
+        console.log(this.player.getHealth());
+
+    }
+});
+}
+}
+
 module.exports = Game;
