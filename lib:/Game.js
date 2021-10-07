@@ -59,7 +59,7 @@ Game.prototype.battle = function() {
                 if(action === 'Use potion') {
                     if(!this.player.getInventory()) {
                         console.log("You don't have any potions");
-                        return;
+                        return this.checkEndofBattle();
                     }
                     inquirer
                         .prompt ({
@@ -72,21 +72,58 @@ Game.prototype.battle = function() {
                             const potionDetails = action.split(': ');
 
                             this.player.usePotion(potionDetails[0] - 1);
-                            console.log(`You use a ${potionDeatils[1]} potion`);
+                            console.log(`You use a ${potionDetails[1]} potion`);
+                            this.checkEndofBattle();
                         });
                     // follow-up prompt will go here
-                
-        // player prompts will go here
-    } else {
+        } else {
+        const damage = this.player.getAttackValue();
+        this.currentEnemy.reduceHealth(damage);
+
+        console.log(`You attacked the ${this.currentEnemy.name}`);
+        console.log(this.currentEnemy.getHealth());
+
+        this.checkEndofBattle();
+      }
+    });
+    }else {
         const damage = this.currentEnemy.getAttackValue();
         this.player.reduceHealth(damage);
 
         console.log(`You were attacked by the ${this.currentEnemy.name}`);
         console.log(this.player.getHealth());
 
+        this.checkEndofBattle();
+
+    }};
+
+
+
+Game.prototype.checkEndofBattle = function() {
+    if(this.player.isAlive() && this.currentEnemy.isAlive()) {
+        this.isPlayerTurn = !this.isPlayerTurn;
+        this.battle();
     }
-});
-}
-}
+    else if (this.player.isAlive() && !this.currentEnemy.isAlive()) {
+        console.log(`You've defeated the ${this.currentEnemy.name}`);
+      
+        this.player.addPotion(this.currentEnemy.potion);
+        console.log(`${this.player.name} found a ${this.currentEnemy.potion.name} potion`);
+      
+        this.roundNumber++;
+      
+        if (this.roundNumber < this.enemies.length) {
+          this.currentEnemy = this.enemies[this.roundNumber];
+          this.startNewBattle();
+        } else {
+          console.log('You win!');
+        }
+      }else {
+        console.log("You've been defeated!");
+      }
+
+
+};
+
 
 module.exports = Game;
